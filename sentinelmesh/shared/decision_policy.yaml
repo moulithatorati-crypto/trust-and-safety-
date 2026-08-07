@@ -1,0 +1,34 @@
+policy_version: "v1.0"
+
+# --- Risk scoring agent -----------------------------------------------
+risk_tiers:
+  - {name: low,      score_max: 0.15, action: allow}
+  - {name: medium,   score_max: 0.45, action: step_up_otp}
+  - {name: high,     score_max: 0.80, action: prepaid_only}
+  - {name: critical, score_max: 1.00, action: block}
+
+# minimum number of independent signals that must agree before the risk
+# agent is allowed to fire an automated negative action (prepaid_only /
+# block). Below this, even a high score is downgraded to human_review.
+risk_min_agreeing_signals: 2
+
+# --- Authenticity agent --------------------------------------------------
+authenticity_thresholds:
+  auto_publish: 0.85
+  auto_reject: 0.30
+  # between the two -> human_review, UNLESS the multi-signal gate fires:
+  # price_deviation AND (image_similarity low OR seller_unauthorized)
+
+authenticity_signal_thresholds:
+  price_deviation_pct: 0.40      # 40%+ below category MSRP counts as a signal
+  image_similarity_low: 0.35     # below this hash-similarity score counts as a signal
+
+# --- Review moderation agent ----------------------------------------------
+review_thresholds:
+  auto_publish: 0.85
+  auto_suppress: 0.40
+
+review_ring_thresholds:
+  time_window_minutes: 30
+  min_ring_size: 3
+  min_rating_uniformity: 0.8   # fraction of ring reviews sharing the same rating
